@@ -1,0 +1,468 @@
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+:root {
+  --primary-color: #2563eb;
+  --secondary-color: #3b82f6;
+  --accent-color: #f59e0b;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --background-light: #f3f4f6;
+  --background-white: #ffffff;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-light);
+}
+
+/* 导航栏样式 */
+.navbar {
+  background-color: var(--background-white);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.nav-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: transform 0.3s ease;
+}
+
+.nav-brand:hover {
+  transform: scale(1.05);
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+.nav-cart {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.nav-cart:hover {
+  transform: scale(1.1);
+}
+
+.cart-icon {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 50%;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.auth-button {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.auth-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-primary);
+}
+
+.user-info span {
+  font-weight: 500;
+}
+
+.user-info button {
+  background: none;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.user-info button:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* 主要内容区样式 */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 分类和轮播图容器 */
+.categories-banner-container {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  height: 50vh; /* 设置为视窗高度的一半 */
+  min-height: 300px; /* 设置最小高度 */
+  max-height: 500px; /* 设置最大高度 */
+}
+
+/* 分类样式 */
+.categories {
+  flex: 0 0 25%;
+  padding: 20px;
+  background-color: var(--background-white);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.categories:hover {
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.categories .category-list {
+  max-height: calc(50vh - 120px); /* 减去标题和导航的高度 */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.categories .category-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categories .category-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.categories .category-list::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+  border-radius: 3px;
+}
+
+/* 轮播图区域样式 */
+.banner {
+  flex: 0 0 75%;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  padding: 2rem;
+  text-align: center;
+  border-radius: 16px;
+  color: white;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.banner h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.banner p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* 分类导航样式优化 */
+.category-navigation {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.back-button {
+  padding: 5px 10px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: var(--secondary-color);
+}
+
+.current-category {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+/* 分类项样式优化 */
+.category-item {
+  padding: 12px;
+  background-color: #f8f8f8;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.category-item:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 商品列表样式 */
+.products h2 {
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  padding: 20px;
+}
+
+.product-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  transition: transform 0.2s;
+  background: white;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.product-card h3 {
+  margin: 10px 0;
+  font-size: 16px;
+  height: 48px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-card .price {
+  color: #e4393c;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.product-card .description {
+  color: #666;
+  font-size: 14px;
+  margin: 10px 0;
+  height: 40px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-card .add-to-cart {
+  background-color: #e4393c;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.product-card .add-to-cart:hover {
+  background-color: #c1272d;
+}
+
+/* 响应式布局 */
+@media (max-width: 1200px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 页脚样式 */
+.footer {
+  background-color: var(--text-primary);
+  color: white;
+  padding: 3rem 2rem;
+  margin-top: 2rem;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-section h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.footer-section p {
+  color: #9ca3af;
+  margin-bottom: 0.8rem;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.footer-section p:hover {
+  color: white;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  color: #9ca3af;
+}
+
+/* 添加动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-card {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.product-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.product-card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.product-card:nth-child(4) {
+  animation-delay: 0.3s;
+}
