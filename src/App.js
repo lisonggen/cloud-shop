@@ -6,6 +6,7 @@ import Register from './components/Register';
 function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -88,6 +89,16 @@ function App() {
     setIsLogin(!isLogin);
   };
 
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setShowAuth(false);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('token');
+  };
+
   const handleLogin = (userData) => {
     setUser(userData);
     setShowAuth(false);
@@ -110,16 +121,12 @@ function App() {
           <a href="#about">关于我们</a>
         </div>
         <div className="nav-right">
-          {user ? (
-            <div className="user-info">
-              <span>欢迎, {user.username}</span>
-              <button onClick={() => setUser(null)}>退出</button>
-            </div>
-          ) : (
-            <button className="auth-button" onClick={() => setShowAuth(true)}>
-              登录/注册
-            </button>
-          )}
+          <button 
+            className="auth-button" 
+            onClick={isLoggedIn ? handleLogout : () => setShowAuth(true)}
+          >
+            {isLoggedIn ? '登出' : '登录/注册'}
+          </button>
           <div className="nav-cart">
             <span className="cart-icon">🛒</span>
             <span className="cart-count">0</span>
@@ -216,7 +223,7 @@ function App() {
           <Login
             onClose={handleAuthClose}
             onSwitchToRegister={handleSwitchAuth}
-            onLogin={handleLogin}
+            onLoginSuccess={handleLoginSuccess}
           />
         ) : (
           <Register

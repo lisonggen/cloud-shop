@@ -40,12 +40,13 @@ function Register({ onClose, onSwitchToLogin }) {
         }),
       });
 
-      if (response.ok) {
+      const result = await response.json();
+      
+      if (result.code === 1000) {
         alert('注册成功！');
         onClose();
       } else {
-        const data = await response.json();
-        alert(data.message || '注册失败，请重试！');
+        alert(result.data || '注册失败，请重试！');
       }
     } catch (error) {
       console.error('注册错误:', error);
