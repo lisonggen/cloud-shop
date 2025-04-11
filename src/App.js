@@ -133,7 +133,6 @@ function App() {
         <div className="categories-banner-container">
           {/* 商品分类 */}
           <div className="categories">
-            <h2>商品分类</h2>
             <div className="category-navigation">
               {categoryHistory.length > 0 && (
                 <button className="back-button" onClick={handleCategoryBack}>

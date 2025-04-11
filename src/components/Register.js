@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './Register.css';
+import { API_ENDPOINTS } from '../config/config';
 
 function Register({ onClose, onSwitchToLogin }) {
   const [formData, setFormData] = useState({
@@ -7,6 +8,7 @@ function Register({ onClose, onSwitchToLogin }) {
     email: '',
     password: '',
     confirmPassword: '',
+    phone: '',
   });
 
   const handleChange = (e) => {
@@ -17,14 +19,38 @@ function Register({ onClose, onSwitchToLogin }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert('两次输入的密码不一致！');
       return;
     }
-    // TODO: 实现注册逻辑
-    console.log('注册信息:', formData);
+
+    try {
+      const response = await fetch(API_ENDPOINTS.USER_REGISTER, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+          phone: formData.phone,
+          email: formData.email,
+        }),
+      });
+
+      if (response.ok) {
+        alert('注册成功！');
+        onClose();
+      } else {
+        const data = await response.json();
+        alert(data.message || '注册失败，请重试！');
+      }
+    } catch (error) {
+      console.error('注册错误:', error);
+      alert('注册失败，请重试！');
+    }
   };
 
   return (
@@ -55,6 +81,18 @@ function Register({ onClose, onSwitchToLogin }) {
               onChange={handleChange}
               required
               placeholder="请输入邮箱"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="phone">手机号</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              placeholder="请输入手机号"
             />
           </div>
           <div className="form-group">
