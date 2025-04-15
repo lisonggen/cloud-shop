@@ -1,7 +1,87 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { API_BASE_URL } from './config/config';
 import './App.css';
 import Login from './components/Login';
 import Register from './components/Register';
+import ProductDetail from './components/ProductDetail';
+
+function MainContent({ 
+  loading, 
+  error, 
+  products, 
+  handleProductClick,
+  categories,
+  categoryHistory,
+  handleCategoryBack,
+  handleCategoryClick,
+  selectedCategory 
+}) {
+  return (
+    <main className="main-content">
+      {/* 分类和轮播图容器 */}
+      <div className="categories-banner-container">
+        {/* 商品分类 */}
+        <div className="categories">
+          <div className="category-navigation">
+            {categoryHistory.length > 0 && (
+              <button className="back-button" onClick={handleCategoryBack}>
+                返回上级
+              </button>
+            )}
+            <div className="current-category">
+              {selectedCategory ? selectedCategory.name : '全部分类'}
+            </div>
+          </div>
+          <div className="category-list">
+            {categories.map(category => (
+              <div 
+                key={category.id} 
+                className="category-item"
+                onClick={() => handleCategoryClick(category)}
+              >
+                {category.name}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 轮播图区域 */}
+        <div className="banner">
+          <h1>欢迎来到 Cloud Shop</h1>
+          <p>发现更多优质商品</p>
+        </div>
+      </div>
+
+      {/* 商品列表 */}
+      <div className="products">
+        <h2>热门商品</h2>
+        {loading ? (
+          <div className="loading">加载中...</div>
+        ) : error ? (
+          <div className="error">{error}</div>
+        ) : (
+          <div className="product-grid">
+            {products.map(product => (
+              <div 
+                key={product.id} 
+                className="product-card"
+                onClick={() => handleProductClick(product.id)}
+                style={{ cursor: 'pointer' }}
+              >
+                <img src={product.image} alt={product.name} />
+                <h3>{product.name}</h3>
+                <p className="price">¥{product.price}</p>
+                <p className="description">{product.description}</p>
+                <button className="add-to-cart">加入购物车</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
 
 function App() {
   const [showAuth, setShowAuth] = useState(false);
@@ -23,8 +103,8 @@ function App() {
   const fetchCategories = async (parentId) => {
     try {
       const url = parentId 
-        ? `http://localhost:8080/goods/api/category/list?parentId=${parentId}`
-        : 'http://localhost:8080/goods/api/category/list';
+        ? `${API_BASE_URL}/goods/api/category/list?parentId=${parentId}`
+        : `${API_BASE_URL}/goods/api/category/list`;
       const response = await fetch(url);
       const result = await response.json();
       
@@ -60,14 +140,14 @@ function App() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:8080/goods/api/goods/list');
+      const response = await fetch(`${API_BASE_URL}/goods/api/goods/list`);
       const result = await response.json();
       
       if (result.code === 1000) {
         setProducts(result.data.map(item => ({
           id: item.id,
           name: item.name,
-          price: 0, // Since price is not in the API response, setting default to 0
+          price: 0,
           image: item.image || "https://via.placeholder.com/200",
           description: item.caption
         })));
@@ -109,131 +189,95 @@ function App() {
     setShowAuth(false);
   };
 
+  const handleProductClick = (productId) => {
+    window.open(`/product/${productId}`, '_blank');
+  };
+
   return (
-    <div className="App">
-      {/* 导航栏 */}
-      <nav className="navbar">
-        <div className="nav-brand">Cloud Shop</div>
-        <div className="nav-links">
-          <a href="#home">首页</a>
-          <a href="#categories">分类</a>
-          <a href="#deals">特惠</a>
-          <a href="#about">关于我们</a>
-        </div>
-        <div className="nav-right">
-          <button 
-            className="auth-button" 
-            onClick={isLoggedIn ? handleLogout : () => setShowAuth(true)}
-          >
-            {isLoggedIn ? '登出' : '登录/注册'}
-          </button>
-          <div className="nav-cart">
-            <span className="cart-icon">🛒</span>
-            <span className="cart-count">0</span>
+    <Router>
+      <div className="App">
+        {/* 导航栏 */}
+        <nav className="navbar">
+          <div className="nav-brand">Cloud Shop</div>
+          <div className="nav-links">
+            <Link to="/">首页</Link>
+            <Link to="/categories">分类</Link>
+            <Link to="/deals">特惠</Link>
+            <Link to="/about">关于我们</Link>
           </div>
-        </div>
-      </nav>
-
-      {/* 主要内容区 */}
-      <main className="main-content">
-        {/* 分类和轮播图容器 */}
-        <div className="categories-banner-container">
-          {/* 商品分类 */}
-          <div className="categories">
-            <div className="category-navigation">
-              {categoryHistory.length > 0 && (
-                <button className="back-button" onClick={handleCategoryBack}>
-                  返回上级
-                </button>
-              )}
-              <div className="current-category">
-                {selectedCategory ? selectedCategory.name : '全部分类'}
-              </div>
-            </div>
-            <div className="category-list">
-              {categories.map(category => (
-                <div 
-                  key={category.id} 
-                  className="category-item"
-                  onClick={() => handleCategoryClick(category)}
-                >
-                  {category.name}
-                </div>
-              ))}
+          <div className="nav-right">
+            <button 
+              className="auth-button" 
+              onClick={isLoggedIn ? handleLogout : () => setShowAuth(true)}
+            >
+              {isLoggedIn ? '登出' : '登录/注册'}
+            </button>
+            <div className="nav-cart">
+              <span className="cart-icon">🛒</span>
+              <span className="cart-count">0</span>
             </div>
           </div>
+        </nav>
 
-          {/* 轮播图区域 */}
-          <div className="banner">
-            <h1>欢迎来到 Cloud Shop</h1>
-            <p>发现更多优质商品</p>
+        <Routes>
+          <Route path="/" element={
+            <MainContent 
+              loading={loading}
+              error={error}
+              products={products}
+              handleProductClick={handleProductClick}
+              categories={categories}
+              categoryHistory={categoryHistory}
+              handleCategoryBack={handleCategoryBack}
+              handleCategoryClick={handleCategoryClick}
+              selectedCategory={selectedCategory}
+            />
+          } />
+          <Route path="/product/:productId" element={<ProductDetail />} />
+        </Routes>
+
+        {/* 页脚 */}
+        <footer className="footer">
+          <div className="footer-content">
+            <div className="footer-section">
+              <h3>关于我们</h3>
+              <p>Cloud Shop 是您的优质购物平台</p>
+            </div>
+            <div className="footer-section">
+              <h3>客户服务</h3>
+              <p>联系我们</p>
+              <p>配送说明</p>
+              <p>退换货政策</p>
+            </div>
+            <div className="footer-section">
+              <h3>关注我们</h3>
+              <p>微信公众号</p>
+              <p>微博</p>
+            </div>
           </div>
-        </div>
+          <div className="footer-bottom">
+            <p>&copy; 2024 Cloud Shop. All rights reserved.</p>
+          </div>
+        </footer>
 
-        {/* 商品列表 */}
-        <div className="products">
-          <h2>热门商品</h2>
-          {loading ? (
-            <div className="loading">加载中...</div>
-          ) : error ? (
-            <div className="error">{error}</div>
+        {/* 登录/注册模态框 */}
+        {showAuth && (
+          isLogin ? (
+            <Login
+              onClose={handleAuthClose}
+              onSwitchToRegister={handleSwitchAuth}
+              onLoginSuccess={handleLoginSuccess}
+            />
           ) : (
-            <div className="product-grid">
-              {products.map(product => (
-                <div key={product.id} className="product-card">
-                  <img src={product.image} alt={product.name} />
-                  <h3>{product.name}</h3>
-                  <p className="price">¥{product.price}</p>
-                  <p className="description">{product.description}</p>
-                  <button className="add-to-cart">加入购物车</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* 页脚 */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-section">
-            <h3>关于我们</h3>
-            <p>Cloud Shop 是您的优质购物平台</p>
-          </div>
-          <div className="footer-section">
-            <h3>客户服务</h3>
-            <p>联系我们</p>
-            <p>配送说明</p>
-            <p>退换货政策</p>
-          </div>
-          <div className="footer-section">
-            <h3>关注我们</h3>
-            <p>微信公众号</p>
-            <p>微博</p>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>&copy; 2024 Cloud Shop. All rights reserved.</p>
-        </div>
-      </footer>
-
-      {/* 登录/注册模态框 */}
-      {showAuth && (
-        isLogin ? (
-          <Login
-            onClose={handleAuthClose}
-            onSwitchToRegister={handleSwitchAuth}
-            onLoginSuccess={handleLoginSuccess}
-          />
-        ) : (
-          <Register
-            onClose={handleAuthClose}
-            onSwitchToLogin={handleSwitchAuth}
-            onRegister={handleRegister}
-          />
-        )
-      )}
-    </div>
+            <Register
+              onClose={handleAuthClose}
+              onSwitchToLogin={handleSwitchAuth}
+              onRegister={handleRegister}
+            />
+          )
+        )}
+      </div>
+    </Router>
   );
 }
 
