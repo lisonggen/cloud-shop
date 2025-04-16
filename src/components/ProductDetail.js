@@ -14,7 +14,10 @@ function ProductDetail() {
   // 安全地解析JSON字符串
   const safeJsonParse = (str, fallback = {}) => {
     try {
-      return str ? JSON.parse(str) : fallback;
+      if (!str) return fallback;
+      // 处理单引号的情况
+      const normalizedStr = str.replace(/'/g, '"');
+      return JSON.parse(normalizedStr);
     } catch (e) {
       console.error('JSON parse error:', e);
       return fallback;
@@ -82,13 +85,50 @@ function ProductDetail() {
   };
 
   const isSpecAvailable = (specName, value) => {
+    // 检查是否有任何SKU包含这个规格值且有库存
     return skus.some(sku => {
       const skuSpecs = safeJsonParse(sku.spec);
-      return skuSpecs[specName] === value && 
-             Object.entries(selectedSpecs).every(([key, val]) => 
-               key === specName || skuSpecs[key] === val
-             );
+      // 首先检查这个规格值是否匹配
+      if (skuSpecs[specName] !== value) {
+        return false;
+      }
+      
+      // 检查其他已选规格是否匹配
+      const otherSpecsMatch = Object.entries(selectedSpecs).every(([key, val]) => {
+        // 跳过当前正在检查的规格
+        if (key === specName) return true;
+        // 如果这个规格还没选择，也跳过
+        if (!val) return true;
+        // 检查规格值是否匹配
+        return skuSpecs[key] === val;
+      });
+
+      // 最后检查库存
+      return otherSpecsMatch && sku.num > 0;
     });
+  };
+
+  // 检查是否所有规格都已选择
+  const areAllSpecsSelected = () => {
+    return Object.keys(specItems).every(specName => selectedSpecs[specName]);
+  };
+
+  // 处理加入购物车
+  const handleAddToCart = () => {
+    if (!areAllSpecsSelected()) {
+      alert('请选择商品规格');
+      return;
+    }
+    // TODO: 实现加入购物车逻辑
+  };
+
+  // 处理立即购买
+  const handleBuyNow = () => {
+    if (!areAllSpecsSelected()) {
+      alert('请选择商品规格');
+      return;
+    }
+    // TODO: 实现立即购买逻辑
   };
 
   // 处理商品图片
@@ -165,8 +205,8 @@ function ProductDetail() {
               <input type="number" min="1" defaultValue="1" className="quantity-input" />
               <button className="quantity-btn">+</button>
             </div>
-            <button className="add-to-cart-btn">加入购物车</button>
-            <button className="buy-now-btn">立即购买</button>
+            <button className="add-to-cart-btn" onClick={handleAddToCart}>加入购物车</button>
+            <button className="buy-now-btn" onClick={handleBuyNow}>立即购买</button>
           </div>
 
           <div className="product-meta">
