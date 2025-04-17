@@ -109,12 +109,59 @@ function AppContent() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryHistory, setCategoryHistory] = useState([]);
   const [state, setState] = useState({});
+  const [cartCount, setCartCount] = useState(0);
   const { isAuthenticated, logout, getToken, isLoading } = useAuth();
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    // Fetch cart count when authentication state changes
+    if (isAuthenticated) {
+      fetchCartCount();
+    } else {
+      setCartCount(0);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    // Add event listener for cart updates from other components
+    const handleCartUpdate = () => {
+      if (isAuthenticated) {
+        fetchCartCount();
+      }
+    };
+
+    window.addEventListener('cart-updated', handleCartUpdate);
+    
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener('cart-updated', handleCartUpdate);
+    };
+  }, [isAuthenticated]);
+
+  const fetchCartCount = async () => {
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      const response = await fetch(`${API_BASE_URL}/cart/api/cart/count`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const result = await response.json();
+      
+      if (result.code === 1000) {
+        setCartCount(result.data);
+      }
+    } catch (err) {
+      console.error('Error fetching cart count:', err);
+    }
+  };
 
   const fetchCategories = async (parentId) => {
     try {
@@ -189,6 +236,8 @@ function AppContent() {
     setShowAuth(false);
     // Force a re-render
     setState({});
+    // Fetch cart count after successful login
+    fetchCartCount();
   };
 
   const handleLogout = () => {
@@ -196,6 +245,8 @@ function AppContent() {
     console.log('Logged out, token removed from localStorage');
     // Verify token is removed
     console.log('Token after logout:', localStorage.getItem('token'));
+    // Reset cart count
+    setCartCount(0);
     // Force a re-render
     setState({});
   };
@@ -225,7 +276,7 @@ function AppContent() {
               {isAuthenticated ? '登出' : '登录/注册'}
             </button>
           )}
-          <NavCart />
+          <NavCart itemCount={cartCount} />
         </div>
       </nav>
 

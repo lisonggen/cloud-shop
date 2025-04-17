@@ -163,13 +163,19 @@
   color: #873800;
 }
 
-.buy-now-btn {
-  background: #ff4400;
-  color: white;
+.add-to-cart-btn.loading {
+  background: #f5f5f5;
+  color: #999;
+  cursor: wait;
 }
 
 .add-to-cart-btn:hover {
   background: #ffc069;
+}
+
+.buy-now-btn {
+  background: #ff4400;
+  color: white;
 }
 
 .buy-now-btn:hover {

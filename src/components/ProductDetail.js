@@ -14,6 +14,7 @@ function ProductDetail() {
   const [selectedSku, setSelectedSku] = useState(null);
   const [selectedSpecs, setSelectedSpecs] = useState({});
   const [quantity, setQuantity] = useState(1);
+  const [addToCartStatus, setAddToCartStatus] = useState('');
 
   // 安全地解析JSON字符串
   const safeJsonParse = (str, fallback = {}) => {
@@ -118,13 +119,65 @@ function ProductDetail() {
     return Object.keys(specItems).every(specName => selectedSpecs[specName]);
   };
 
+  // 处理商品数量变更
+  const handleQuantityChange = (change) => {
+    const newQuantity = Math.max(1, quantity + change);
+    setQuantity(newQuantity);
+  };
+
+  const handleQuantityInputChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      setQuantity(value);
+    }
+  };
+
   // 处理加入购物车
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!areAllSpecsSelected()) {
       alert('请选择商品规格');
       return;
     }
-    // TODO: 实现加入购物车逻辑
+
+    const token = getToken();
+    if (!token) {
+      alert('请先登录');
+      return;
+    }
+
+    try {
+      setAddToCartStatus('loading');
+      
+      const response = await fetch(`${API_BASE_URL}/cart/api/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          skuId: selectedSku.id,
+          quantity: quantity,
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.code === 1000) {
+        setAddToCartStatus('success');
+        setTimeout(() => setAddToCartStatus(''), 3000);
+        // 通知其他组件刷新购物车数量
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+      } else if (result.code === 1001) {
+        setAddToCartStatus('error');
+        alert('登录已过期，请重新登录');
+      } else {
+        setAddToCartStatus('error');
+        alert(result.msg || '加入购物车失败');
+      }
+    } catch (err) {
+      setAddToCartStatus('error');
+      alert('加入购物车失败: ' + err.message);
+    }
   };
 
   // 处理立即购买
@@ -206,11 +259,35 @@ function ProductDetail() {
 
           <div className="product-actions">
             <div className="quantity-selector">
-              <button className="quantity-btn">-</button>
-              <input type="number" min="1" defaultValue="1" className="quantity-input" />
-              <button className="quantity-btn">+</button>
+              <button 
+                className="quantity-btn" 
+                onClick={() => handleQuantityChange(-1)}
+                disabled={quantity <= 1}
+              >
+                -
+              </button>
+              <input 
+                type="number" 
+                min="1" 
+                value={quantity}
+                onChange={handleQuantityInputChange}
+                className="quantity-input" 
+              />
+              <button 
+                className="quantity-btn"
+                onClick={() => handleQuantityChange(1)}
+              >
+                +
+              </button>
             </div>
-            <button className="add-to-cart-btn" onClick={handleAddToCart}>加入购物车</button>
+            <button 
+              className={`add-to-cart-btn ${addToCartStatus === 'loading' ? 'loading' : ''}`} 
+              onClick={handleAddToCart}
+              disabled={addToCartStatus === 'loading'}
+            >
+              {addToCartStatus === 'loading' ? '添加中...' : 
+               addToCartStatus === 'success' ? '添加成功' : '加入购物车'}
+            </button>
             <button className="buy-now-btn" onClick={handleBuyNow}>立即购买</button>
           </div>
 

@@ -80,6 +80,8 @@ function Cart() {
       
       if (result.code === 1000) {
         fetchCartItems(token);
+        // Notify other components to update cart count
+        window.dispatchEvent(new CustomEvent('cart-updated'));
       } else if (result.code === 1001) {
         setError('登录已过期，请重新登录');
       } else {
@@ -110,6 +112,8 @@ function Cart() {
       
       if (result.code === 1000) {
         fetchCartItems(token);
+        // Notify other components to update cart count
+        window.dispatchEvent(new CustomEvent('cart-updated'));
       } else if (result.code === 1001) {
         setError('登录已过期，请重新登录');
       } else {
