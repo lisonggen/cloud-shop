@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from './config/config';
 import './App.css';
 import Login from './components/Login';
 import Register from './components/Register';
 import ProductDetail from './components/ProductDetail';
+import Cart from './components/Cart';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 function MainContent({ 
   loading, 
@@ -83,17 +85,31 @@ function MainContent({
   );
 }
 
-function App() {
+function NavCart({ itemCount = 0 }) {
+  const handleCartClick = () => {
+    const url = new URL('/cart', window.location.origin);
+    window.open(url.toString(), '_blank');
+  };
+
+  return (
+    <div className="nav-cart" onClick={handleCartClick}>
+      <span className="cart-icon">🛒</span>
+      <span className="cart-count">{itemCount}</span>
+    </div>
+  );
+}
+
+function AppContent() {
   const [showAuth, setShowAuth] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryHistory, setCategoryHistory] = useState([]);
+  const [state, setState] = useState({});
+  const { isAuthenticated, logout, getToken, isLoading } = useAuth();
 
   useEffect(() => {
     fetchProducts();
@@ -170,114 +186,118 @@ function App() {
   };
 
   const handleLoginSuccess = () => {
-    setIsLoggedIn(true);
     setShowAuth(false);
+    // Force a re-render
+    setState({});
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    localStorage.removeItem('token');
-  };
-
-  const handleLogin = (userData) => {
-    setUser(userData);
-    setShowAuth(false);
-  };
-
-  const handleRegister = (userData) => {
-    setUser(userData);
-    setShowAuth(false);
+    logout();
+    console.log('Logged out, token removed from localStorage');
+    // Verify token is removed
+    console.log('Token after logout:', localStorage.getItem('token'));
+    // Force a re-render
+    setState({});
   };
 
   const handleProductClick = (productId) => {
-    window.open(`/product/${productId}`, '_blank');
+    const url = new URL(`/product/${productId}`, window.location.origin);
+    window.open(url.toString(), '_blank');
   };
 
   return (
-    <Router>
-      <div className="App">
-        {/* 导航栏 */}
-        <nav className="navbar">
-          <div className="nav-brand">Cloud Shop</div>
-          <div className="nav-links">
-            <Link to="/">首页</Link>
-            <Link to="/categories">分类</Link>
-            <Link to="/deals">特惠</Link>
-            <Link to="/about">关于我们</Link>
-          </div>
-          <div className="nav-right">
+    <div className="App">
+      {/* 导航栏 */}
+      <nav className="navbar">
+        <div className="nav-brand">Cloud Shop</div>
+        <div className="nav-links">
+          <Link to="/">首页</Link>
+          <Link to="/categories">分类</Link>
+          <Link to="/deals">特惠</Link>
+          <Link to="/about">关于我们</Link>
+        </div>
+        <div className="nav-right">
+          {!isLoading && (
             <button 
               className="auth-button" 
-              onClick={isLoggedIn ? handleLogout : () => setShowAuth(true)}
+              onClick={isAuthenticated ? handleLogout : () => setShowAuth(true)}
             >
-              {isLoggedIn ? '登出' : '登录/注册'}
+              {isAuthenticated ? '登出' : '登录/注册'}
             </button>
-            <div className="nav-cart">
-              <span className="cart-icon">🛒</span>
-              <span className="cart-count">0</span>
-            </div>
-          </div>
-        </nav>
+          )}
+          <NavCart />
+        </div>
+      </nav>
 
-        <Routes>
-          <Route path="/" element={
-            <MainContent 
-              loading={loading}
-              error={error}
-              products={products}
-              handleProductClick={handleProductClick}
-              categories={categories}
-              categoryHistory={categoryHistory}
-              handleCategoryBack={handleCategoryBack}
-              handleCategoryClick={handleCategoryClick}
-              selectedCategory={selectedCategory}
-            />
-          } />
-          <Route path="/product/:productId" element={<ProductDetail />} />
-        </Routes>
+      <Routes>
+        <Route path="/" element={
+          <MainContent 
+            loading={loading}
+            error={error}
+            products={products}
+            handleProductClick={handleProductClick}
+            categories={categories}
+            categoryHistory={categoryHistory}
+            handleCategoryBack={handleCategoryBack}
+            handleCategoryClick={handleCategoryClick}
+            selectedCategory={selectedCategory}
+          />
+        } />
+        <Route path="/product/:productId" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+      </Routes>
 
-        {/* 页脚 */}
-        <footer className="footer">
-          <div className="footer-content">
-            <div className="footer-section">
-              <h3>关于我们</h3>
-              <p>Cloud Shop 是您的优质购物平台</p>
-            </div>
-            <div className="footer-section">
-              <h3>客户服务</h3>
-              <p>联系我们</p>
-              <p>配送说明</p>
-              <p>退换货政策</p>
-            </div>
-            <div className="footer-section">
-              <h3>关注我们</h3>
-              <p>微信公众号</p>
-              <p>微博</p>
-            </div>
+      {/* 页脚 */}
+      <footer className="footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h3>关于我们</h3>
+            <p>Cloud Shop 是您的优质购物平台</p>
           </div>
-          <div className="footer-bottom">
-            <p>&copy; 2024 Cloud Shop. All rights reserved.</p>
+          <div className="footer-section">
+            <h3>客户服务</h3>
+            <p>联系我们</p>
+            <p>配送说明</p>
+            <p>退换货政策</p>
           </div>
-        </footer>
+          <div className="footer-section">
+            <h3>关注我们</h3>
+            <p>微信公众号</p>
+            <p>微博</p>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; 2024 Cloud Shop. All rights reserved.</p>
+        </div>
+      </footer>
 
-        {/* 登录/注册模态框 */}
-        {showAuth && (
-          isLogin ? (
-            <Login
-              onClose={handleAuthClose}
-              onSwitchToRegister={handleSwitchAuth}
-              onLoginSuccess={handleLoginSuccess}
-            />
-          ) : (
-            <Register
-              onClose={handleAuthClose}
-              onSwitchToLogin={handleSwitchAuth}
-              onRegister={handleRegister}
-            />
-          )
-        )}
-      </div>
-    </Router>
+      {/* 登录/注册模态框 */}
+      {showAuth && (
+        isLogin ? (
+          <Login
+            onClose={() => setShowAuth(false)}
+            onSwitchToRegister={() => setIsLogin(false)}
+            onLoginSuccess={handleLoginSuccess}
+          />
+        ) : (
+          <Register
+            onClose={() => setShowAuth(false)}
+            onSwitchToLogin={() => setIsLogin(true)}
+            onRegister={handleLoginSuccess}
+          />
+        )
+      )}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

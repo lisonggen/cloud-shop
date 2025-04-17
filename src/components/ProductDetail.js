@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { API_BASE_URL } from '../config/config';
+import { useAuth } from '../context/AuthContext';
 import './ProductDetail.css';
 
 function ProductDetail() {
   const { productId } = useParams();
+  const location = useLocation();
+  const { getToken } = useAuth();
   const [product, setProduct] = useState(null);
-  const [selectedSku, setSelectedSku] = useState(null);
-  const [selectedSpecs, setSelectedSpecs] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedSku, setSelectedSku] = useState(null);
+  const [selectedSpecs, setSelectedSpecs] = useState({});
+  const [quantity, setQuantity] = useState(1);
 
   // 安全地解析JSON字符串
   const safeJsonParse = (str, fallback = {}) => {
@@ -34,9 +38,10 @@ function ProductDetail() {
   };
 
   useEffect(() => {
-    const fetchProductDetails = async () => {
+    const fetchProductDetail = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/goods/api/goods/id/${productId}`);
+
         const result = await response.json();
         
         if (result.code === 1000) {
@@ -50,16 +55,16 @@ function ProductDetail() {
             setSelectedSpecs(firstSkuSpecs);
           }
         } else {
-          setError('获取商品详情失败');
+          setError(result.msg || '获取商品详情失败');
         }
       } catch (err) {
-        setError('获取商品详情出错: ' + err.message);
+        setError('获取商品详情失败: ' + err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProductDetails();
+    fetchProductDetail();
   }, [productId]);
 
   if (loading) return <div className="loading">加载中...</div>;
